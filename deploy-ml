@@ -1,0 +1,72 @@
+name: Finalize ML Monitoring System Deployment
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          source venv/bin/activate
+          pytest
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/kubectl
+
+      - name: Set up kubeconfig
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > $HOME/.kube/config
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+
+      - name: Get Kubernetes Pods
+        run: |
+          kubectl get pods
+
+      - name: Get Kubernetes Services
+        run: |
+          kubectl get services
+
+      - name: Bundle ML Monitoring System
+        run: |
+          mkdir ml_monitoring_system
+          cp -r src config tests docs examples ml_monitoring_system/
+          zip -r ml_monitoring_system.zip ml_monitoring_system
+
+      - name: Verify Integrity
+        run: |
+          unzip -t ml_monitoring_system.zip
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ml-monitoring-system
+          path: ml_monitoring_system.zip
