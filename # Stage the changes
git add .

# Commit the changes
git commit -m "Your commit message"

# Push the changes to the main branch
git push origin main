@@ -1,8 +1,0 @@
-# Stage the changes
-git add .
-
-# Commit the changes
-git commit -m "Your commit message"
-
-# Push the changes to the main branch
-git push origin main
