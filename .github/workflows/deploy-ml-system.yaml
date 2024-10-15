@@ -1,4 +1,4 @@
-name: Finalize ML Monitoring System Deployment
+name: Deploy ML System to Kubernetes
 
 on:
   push:
@@ -47,12 +47,9 @@ jobs:
           kubectl apply -f k8s/deployment.yaml
           kubectl apply -f k8s/service.yaml
 
-      - name: Get Kubernetes Pods
+      - name: Get Kubernetes Pods and Services
         run: |
           kubectl get pods
-
-      - name: Get Kubernetes Services
-        run: |
           kubectl get services
 
       - name: Bundle ML Monitoring System
