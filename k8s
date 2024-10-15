@@ -1,6 +1,0 @@
-mkdir k8s
-nano k8s/deployment.yaml
-# Paste the deployment YAML content into the file, then save and exit
-
-nano k8s/service.yaml
-# Paste the service YAML content into the file, then save and exit
